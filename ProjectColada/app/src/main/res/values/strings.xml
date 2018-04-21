@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Colada</string>
+    <string name="view_all">View Drinks</string>
+    <string name="add_new">Add New Drink</string>
+    <string name="title_activity_movie_update_delete">UpdateDeleteDrink</string>
+    <string name="movieName">Drink Name</string>
+    <string name="genre">Instructions</string>
+    <string name="year">Ingredient</string>
+    <string name="rating">Amount(oz)</string>
+    <string name="update">Update</string>
+    <string name="delete">Delete</string>
+    <string name="add">Add</string>
+</resources>
