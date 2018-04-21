@@ -1,10 +1,8 @@
-package com.example.henry.projectcolada;
+package com.example.henry.projectcolada.Authentication;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v4.app.NavUtils;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.View;
@@ -14,6 +12,7 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 import android.view.MenuItem;
 
+import com.example.henry.projectcolada.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;

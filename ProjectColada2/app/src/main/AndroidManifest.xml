@@ -11,29 +11,29 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".LoginActivity">
+        <activity android:name=".Authentication.LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".EditProfileActivity" />
+        <activity android:name=".Authentication.EditProfileActivity" />
         <activity
-            android:name=".ResetPasswordActivity"
-            android:parentActivityName=".LoginActivity">
+            android:name=".Authentication.ResetPasswordActivity"
+            android:parentActivityName=".Authentication.LoginActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".LoginActivity" />
+                android:value=".Authentication.LoginActivity" />
         </activity>
         <activity
-            android:name=".SignupActivity"
-            android:parentActivityName=".LoginActivity">
+            android:name=".Authentication.SignupActivity"
+            android:parentActivityName=".Authentication.LoginActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".LoginActivity" />
+                android:value=".Authentication.LoginActivity" />
         </activity>
-        <activity android:name=".MainActivity"></activity>
+        <activity android:name=".MainActivity.MainActivity"></activity>
     </application>
 
 </manifest>

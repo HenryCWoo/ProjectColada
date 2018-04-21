@@ -1,4 +1,4 @@
-package com.example.henry.projectcolada;
+package com.example.henry.projectcolada.Authentication;
 
 /**
  * Created by h3nry on 4/20/2018.
@@ -14,6 +14,7 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.example.henry.projectcolada.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -107,17 +108,17 @@ public class EditProfileActivity extends AppCompatActivity {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
                                     if (task.isSuccessful()) {
-                                        Toast.makeText(EditProfileActivity.this, "Email address is updated. Please sign in with new email id!", Toast.LENGTH_LONG).show();
+                                        Toast.makeText(EditProfileActivity.this, "Email address is updated. Please sign in with new email id.", Toast.LENGTH_LONG).show();
                                         signOut();
                                         progressBar.setVisibility(View.GONE);
                                     } else {
-                                        Toast.makeText(EditProfileActivity.this, "Failed to update email!", Toast.LENGTH_LONG).show();
+                                        Toast.makeText(EditProfileActivity.this, "Failed to update email.", Toast.LENGTH_LONG).show();
                                         progressBar.setVisibility(View.GONE);
                                     }
                                 }
                             });
                 } else if (newEmail.getText().toString().trim().equals("")) {
-                    newEmail.setError("Enter email");
+                    newEmail.setError("Enter email.");
                     progressBar.setVisibility(View.GONE);
                 }
             }
@@ -143,7 +144,7 @@ public class EditProfileActivity extends AppCompatActivity {
                 progressBar.setVisibility(View.VISIBLE);
                 if (user != null && !newPassword.getText().toString().trim().equals("")) {
                     if (newPassword.getText().toString().trim().length() < 6) {
-                        newPassword.setError("Password too short, enter minimum 6 characters");
+                        newPassword.setError(getString(R.string.minimum_password));
                         progressBar.setVisibility(View.GONE);
                     } else {
                         user.updatePassword(newPassword.getText().toString().trim())
@@ -151,11 +152,11 @@ public class EditProfileActivity extends AppCompatActivity {
                                     @Override
                                     public void onComplete(@NonNull Task<Void> task) {
                                         if (task.isSuccessful()) {
-                                            Toast.makeText(EditProfileActivity.this, "Password is updated, sign in with new password!", Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(EditProfileActivity.this, "Password is updated, please sign in with new password.", Toast.LENGTH_SHORT).show();
                                             signOut();
                                             progressBar.setVisibility(View.GONE);
                                         } else {
-                                            Toast.makeText(EditProfileActivity.this, "Failed to update password!", Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(EditProfileActivity.this, "Failed to update password.", Toast.LENGTH_SHORT).show();
                                             progressBar.setVisibility(View.GONE);
                                         }
                                     }
@@ -192,10 +193,10 @@ public class EditProfileActivity extends AppCompatActivity {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
                                     if (task.isSuccessful()) {
-                                        Toast.makeText(EditProfileActivity.this, "Reset password email is sent!", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(EditProfileActivity.this, "Reset password email is sent.", Toast.LENGTH_SHORT).show();
                                         progressBar.setVisibility(View.GONE);
                                     } else {
-                                        Toast.makeText(EditProfileActivity.this, "Failed to send reset email!", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(EditProfileActivity.this, "Failed to send reset email.", Toast.LENGTH_SHORT).show();
                                         progressBar.setVisibility(View.GONE);
                                     }
                                 }
@@ -217,12 +218,12 @@ public class EditProfileActivity extends AppCompatActivity {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
                                     if (task.isSuccessful()) {
-                                        Toast.makeText(EditProfileActivity.this, "Your profile is deleted:( Create a account now!", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(EditProfileActivity.this, "Your profile was successfully deleted.", Toast.LENGTH_SHORT).show();
                                         startActivity(new Intent(EditProfileActivity.this, SignupActivity.class));
                                         finish();
                                         progressBar.setVisibility(View.GONE);
                                     } else {
-                                        Toast.makeText(EditProfileActivity.this, "Failed to delete your account!", Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(EditProfileActivity.this, "Failed to delete your account.", Toast.LENGTH_SHORT).show();
                                         progressBar.setVisibility(View.GONE);
                                     }
                                 }

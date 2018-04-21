@@ -9,7 +9,7 @@
     android:background="@color/colorPrimaryDark"
     android:padding="@dimen/activity_horizontal_margin"
     android:gravity="center"
-    tools:context="com.example.henry.projectcolada.LoginActivity">
+    tools:context="com.example.henry.projectcolada.Authentication.LoginActivity">
 
         <ImageView
             android:layout_width="@dimen/logo_w_h"

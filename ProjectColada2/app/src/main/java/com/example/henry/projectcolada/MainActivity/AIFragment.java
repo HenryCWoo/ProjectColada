@@ -1,12 +1,16 @@
-package com.colada.cs411;
+package com.example.henry.projectcolada.MainActivity;
+
 
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
@@ -14,8 +18,7 @@ import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.colada.cs411.helper.CheckNetworkStatus;
-import com.colada.cs411.helper.HttpJsonParser;
+import com.example.henry.projectcolada.R;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -24,7 +27,10 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class DrinkListingActivity extends AppCompatActivity {
+/**
+ * A simple {@link Fragment} subclass.
+ */
+public class AIFragment extends Fragment {
     private static final String KEY_SUCCESS = "success";
     private static final String KEY_DATA = "data";
     private static final String KEY_MOVIE_ID = "movie_id";
@@ -35,12 +41,19 @@ public class DrinkListingActivity extends AppCompatActivity {
     private ProgressDialog pDialog;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_drink_listing);
-        drinkListView = findViewById(R.id.drinkList);
-        new FetchDrinkAsyncTask().execute();
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_people_list, container, false);
+    }
 
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        View v = getView();
+
+        drinkListView = v.findViewById(R.id.peopleList);
+        new AIFragment.FetchDrinkAsyncTask().execute();
     }
 
     /**
@@ -51,7 +64,7 @@ public class DrinkListingActivity extends AppCompatActivity {
         protected void onPreExecute() {
             super.onPreExecute();
             //Display progress bar
-            pDialog = new ProgressDialog(DrinkListingActivity.this);
+            pDialog = new ProgressDialog(getActivity());
             pDialog.setMessage("Loading drinks. Please wait...");
             pDialog.setIndeterminate(true);
             pDialog.setCancelable(true);
@@ -60,10 +73,10 @@ public class DrinkListingActivity extends AppCompatActivity {
 
         @Override
         protected String doInBackground(String... params) {
-            HttpJsonParser httpJsonParser = new HttpJsonParser();
+            com.example.henry.projectcolada.helper.HttpJsonParser httpJsonParser = new com.example.henry.projectcolada.helper.HttpJsonParser();
             JSONObject jsonObject = httpJsonParser.makeHttpRequest(
                     BASE_URL + "fetch_all_drinks.php", "GET", null);
-            Log.v("Fetch",jsonObject.toString());
+            Log.v("Fetch", jsonObject.toString());
             try {
                 int success = jsonObject.getInt(KEY_SUCCESS);
                 JSONArray drinkArray;
@@ -89,7 +102,7 @@ public class DrinkListingActivity extends AppCompatActivity {
 
         protected void onPostExecute(String result) {
             pDialog.dismiss();
-            runOnUiThread(new Runnable() {
+            getActivity().runOnUiThread(new Runnable() {
                 public void run() {
                     populateDrinkList();
                 }
@@ -100,30 +113,33 @@ public class DrinkListingActivity extends AppCompatActivity {
 
     /**
      * Updating parsed JSON data into ListView
-     * */
+     */
     private void populateDrinkList() {
         ListAdapter adapter = new SimpleAdapter(
-                DrinkListingActivity.this, drinkList,
-                R.layout.list_item, new String[]{KEY_MOVIE_ID,
+                getActivity(), drinkList,
+                R.layout.fragment_people_list_item, new String[]{KEY_MOVIE_ID,
                 KEY_DRINK_NAME},
                 new int[]{R.id.drinkID, R.id.drinkName});
         // updating listview
         drinkListView.setAdapter(adapter);
+//        // draw a dividing line
+//        drinkListView.setDivider(ContextCompat.getDrawable(getActivity(), R.drawable.divider));
+//        drinkListView.setDividerHeight(1);
         //Call DrinkUpdateDeleteActivity when a drink is clicked
         drinkListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 //Check for network connectivity
-                if (CheckNetworkStatus.isNetworkAvailable(getApplicationContext())) {
+                if (com.example.henry.projectcolada.helper.CheckNetworkStatus.isNetworkAvailable(getActivity().getApplicationContext())) {
                     String drinkid = ((TextView) view.findViewById(R.id.drinkID))
                             .getText().toString();
-                    Intent intent = new Intent(getApplicationContext(),
-                            DrinkUpdateDeleteActivity.class);
+                    Intent intent = new Intent(getActivity().getApplicationContext(),
+                            null); //TODO: create an activity to view profiles
                     intent.putExtra(KEY_MOVIE_ID, drinkid);
                     startActivityForResult(intent, 20);
 
                 } else {
-                    Toast.makeText(DrinkListingActivity.this,
+                    Toast.makeText(getActivity(),
                             "Unable to connect to internet",
                             Toast.LENGTH_LONG).show();
 
@@ -136,16 +152,20 @@ public class DrinkListingActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == 20) {
             // If the result code is 20 that means that
             // the user has deleted/updated the movie.
             // So refresh the movie listing
-            Intent intent = getIntent();
-            finish();
+            Intent intent = getActivity().getIntent();
+            getActivity().finish();
             startActivity(intent);
         }
     }
 
+
+    public AIFragment() {
+        // Required empty public constructor
+    }
 }
