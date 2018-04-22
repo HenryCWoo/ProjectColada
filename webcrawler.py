@@ -2,6 +2,7 @@ import urllib
 from bs4 import BeautifulSoup
 import copy
 import re
+import json
 
 quote_page = "https://www.liquor.com/recipes/"
 page = urllib.request.urlopen(quote_page)
@@ -164,46 +165,52 @@ def removeNonAscii(s):
     return ''.join(stripped)
 
 def getGoogleRating(drinkName):
-    alphaNumericName = removeNonAscii(drinkName)
-    url = "https://www.google.com/search?q=" + "+".join(alphaNumericName.split(" ")) + "+cocktail+rating"
-    headers = {'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:23.0) Gecko/20100101 Firefox/23.0'}  
-    req = urllib.request.Request(url, headers = headers)
-    page = urllib.request.urlopen(req)
-    soup = BeautifulSoup(page, 'html.parser')
-    
-    ratingsList = []
-    rawRatingsList = soup.find_all("div", {"class": "slp f"})
-    for item in rawRatingsList:
-        curText = " ".join(item.get_text().split())
-        if("Rating" in curText):
-            curText = curText.replace("\u200e", "")
-            ratingsList.append(curText)
-    
-    curRating = 0.0
-    curVotes = 0.0
-    for i in ratingsList:
-        curItem = i.split(" ")
-        curItemRating = [0.0,0]
-        for word in range(len(curItem)):
-            if("Rating" in curItem[word] and len(curItem) > 2):
-                try:
-                    curItemRating[0] = float(curItem[word+1].replace(",", ""))
-                except:
-                    break
-            if(("vote" in curItem[word] or "review" in curItem[word]) and word>1):
-                curItemRating[1] = int(curItem[word-1].replace(",", ""))
-            if((curVotes+curItemRating[1])!= 0):
-                curRating = (curRating*curVotes+curItemRating[0]*curItemRating[1])/(curVotes+curItemRating[1])
-                curVotes = (curVotes+curItemRating[1])
-    return((curRating, int(curVotes)))
+    try:
+        alphaNumericName = removeNonAscii(drinkName)
+        url = "https://www.google.com/search?q=" + "+".join(alphaNumericName.split(" ")) + "+cocktail+rating"
+        headers = {'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:23.0) Gecko/20100101 Firefox/23.0'}  
+        req = urllib.request.Request(url, headers = headers)
+        page = urllib.request.urlopen(req)
+        soup = BeautifulSoup(page, 'html.parser')
+        
+        ratingsList = []
+        rawRatingsList = soup.find_all("div", {"class": "slp f"})
+        for item in rawRatingsList:
+            curText = " ".join(item.get_text().split())
+            if("Rating" in curText):
+                curText = curText.replace("\u200e", "")
+                ratingsList.append(curText)
+        
+        curRating = 0.0
+        curVotes = 0.0
+        for i in ratingsList:
+            curItem = i.split(" ")
+            curItemRating = [0.0,0]
+            for word in range(len(curItem)):
+                if("Rating" in curItem[word] and len(curItem) > 2):
+                    try:
+                        curItemRating[0] = float(curItem[word+1].replace(",", ""))
+                    except:
+                        break
+                if(("vote" in curItem[word] or "review" in curItem[word]) and word>1):
+                    curItemRating[1] = int(curItem[word-1].replace(",", ""))
+                if((curVotes+curItemRating[1])!= 0):
+                    curRating = (curRating*curVotes+curItemRating[0]*curItemRating[1])/(curVotes+curItemRating[1])
+                    curVotes = (curVotes+curItemRating[1])
+        return((curRating, int(curVotes)))
+    except:
+        return((0,0))
     
     
 
 drinksList = []
 for i in recipeLinks:
     print(i)
-    page = urllib.request.urlopen(i)
-    soup = BeautifulSoup(page, 'html.parser')
+    try:
+        page = urllib.request.urlopen(i)
+        soup = BeautifulSoup(page, 'html.parser')
+    except:
+        continue
     
     mDict = {}
     mDict["Drink Name"] = getDrinkName(soup)
@@ -230,5 +237,9 @@ for i in recipeLinks:
     mDict["Rating"] = googleRating[0]
     mDict["Rating Count"] = googleRating[1]
     drinksList.append(mDict)
+
+#save data to json file
+with open("scrapedData.json", "w") as fout:
+    json.dump(drinksList, fout)
     
 

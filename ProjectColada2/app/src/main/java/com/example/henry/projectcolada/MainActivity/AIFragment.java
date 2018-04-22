@@ -142,13 +142,9 @@ public class AIFragment extends Fragment {
                     Toast.makeText(getActivity(),
                             "Unable to connect to internet",
                             Toast.LENGTH_LONG).show();
-
                 }
-
-
             }
         });
-
     }
 
     @Override
