@@ -60,7 +60,7 @@ public class PeopleFragment extends Fragment {
     /**
      * Fetches the list of drinks from the server
      */
-    private class FetchDrinkAsyncTask extends AsyncTask<String, String, String> {
+    private class FetchDrinkAsyncTask extends AsyncTask<String, String, Integer> {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -73,7 +73,7 @@ public class PeopleFragment extends Fragment {
         }
 
         @Override
-        protected String doInBackground(String... params) {
+        protected Integer doInBackground(String... params) {
             com.example.henry.projectcolada.helper.HttpJsonParser httpJsonParser = new com.example.henry.projectcolada.helper.HttpJsonParser();
             JSONObject jsonObject = httpJsonParser.makeHttpRequest(
                     BASE_URL + "fetch_all_drinks.php", "GET", null);
@@ -98,16 +98,20 @@ public class PeopleFragment extends Fragment {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            return null;
+            return 0;
         }
 
-        protected void onPostExecute(String result) {
+        protected void onPostExecute(int result) {
             pDialog.dismiss();
-            getActivity().runOnUiThread(new Runnable() {
-                public void run() {
-                    populateDrinkList();
-                }
-            });
+            if(result != 0){
+                getActivity().runOnUiThread(new Runnable() {
+                    public void run() {
+                        populateDrinkList();
+                    }
+                });
+            } else {
+                Toast.makeText(getActivity(), "Failed to get data.", Toast.LENGTH_LONG).show();
+            }
         }
 
     }
@@ -123,9 +127,9 @@ public class PeopleFragment extends Fragment {
                 new int[]{R.id.drinkID, R.id.drinkName});
         // updating listview
         drinkListView.setAdapter(adapter);
-//        // draw a dividing line
-//        drinkListView.setDivider(ContextCompat.getDrawable(getActivity(), R.drawable.divider));
-//        drinkListView.setDividerHeight(1);
+        // draw a dividing line
+        drinkListView.setDivider(ContextCompat.getDrawable(getActivity(), R.drawable.divider));
+        drinkListView.setDividerHeight(1);
         //Call DrinkUpdateDeleteActivity when a drink is clicked
         drinkListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override

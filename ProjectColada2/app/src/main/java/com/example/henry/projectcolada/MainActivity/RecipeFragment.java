@@ -59,7 +59,7 @@ public class RecipeFragment extends Fragment {
     /**
      * Fetches the list of drinks from the server
      */
-    private class FetchDrinkAsyncTask extends AsyncTask<String, String, String> {
+    private class FetchDrinkAsyncTask extends AsyncTask<String, String, Integer> {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -72,7 +72,7 @@ public class RecipeFragment extends Fragment {
         }
 
         @Override
-        protected String doInBackground(String... params) {
+        protected Integer doInBackground(String... params) {
             com.example.henry.projectcolada.helper.HttpJsonParser httpJsonParser = new com.example.henry.projectcolada.helper.HttpJsonParser();
             JSONObject jsonObject = httpJsonParser.makeHttpRequest(
                     BASE_URL + "fetch_all_drinks.php", "GET", null);
@@ -97,16 +97,21 @@ public class RecipeFragment extends Fragment {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            return null;
+            return 0;
         }
 
-        protected void onPostExecute(String result) {
+        protected void onPostExecute(Integer result) {
             pDialog.dismiss();
-            getActivity().runOnUiThread(new Runnable() {
-                public void run() {
-                    populateDrinkList();
-                }
-            });
+            if(result != 0){
+                getActivity().runOnUiThread(new Runnable() {
+                    public void run() {
+                        populateDrinkList();
+                    }
+                });
+            } else {
+                Toast.makeText(getActivity(), "Failed to get data.", Toast.LENGTH_LONG).show();
+            }
+
         }
 
     }
