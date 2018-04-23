@@ -7,6 +7,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,11 +15,13 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.RatingBar;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.henry.projectcolada.R;
+import com.example.henry.projectcolada.helper.CheckNetworkStatus;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -33,8 +36,9 @@ import java.util.HashMap;
 public class RecipeFragment extends Fragment {
     private static final String KEY_SUCCESS = "success";
     private static final String KEY_DATA = "data";
-    private static final String KEY_MOVIE_ID = "movie_id";
-    private static final String KEY_DRINK_NAME = "movie_name";
+    private static final String DRINK_NAME = "drinkName";
+    private static final String AUTHOR = "author";
+    private static final String RATING = "rating";
     private static final String BASE_URL = "http://drowningindata.web.engr.illinois.edu/colada/";
     private ArrayList<HashMap<String, String>> drinkList;
     private ListView drinkListView;
@@ -43,7 +47,7 @@ public class RecipeFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_people_list, container, false);
+        return inflater.inflate(R.layout.fragment_recipe_list, container, false);
     }
 
     @Override
@@ -52,7 +56,7 @@ public class RecipeFragment extends Fragment {
 
         View v = getView();
 
-        drinkListView = v.findViewById(R.id.peopleList);
+        drinkListView = v.findViewById(R.id.recipeList);
         new RecipeFragment.FetchDrinkAsyncTask().execute();
     }
 
@@ -65,9 +69,9 @@ public class RecipeFragment extends Fragment {
             super.onPreExecute();
             //Display progress bar
             pDialog = new ProgressDialog(getActivity());
-            pDialog.setMessage("Loading drinks. Please wait...");
+            pDialog.setMessage("Loading drinks. Please wait.");
             pDialog.setIndeterminate(true);
-            pDialog.setCancelable(true);
+            pDialog.setCancelable(false);
             pDialog.show();
         }
 
@@ -76,7 +80,7 @@ public class RecipeFragment extends Fragment {
             com.example.henry.projectcolada.helper.HttpJsonParser httpJsonParser = new com.example.henry.projectcolada.helper.HttpJsonParser();
             JSONObject jsonObject = httpJsonParser.makeHttpRequest(
                     BASE_URL + "fetch_all_drinks.php", "GET", null);
-            Log.v("Fetch", jsonObject.toString());
+            Log.v("Fetch drinks", jsonObject.toString());
             try {
                 int success = jsonObject.getInt(KEY_SUCCESS);
                 JSONArray drinkArray;
@@ -86,18 +90,24 @@ public class RecipeFragment extends Fragment {
                     //Iterate through the response and populate movies list
                     for (int i = 0; i < drinkArray.length(); i++) {
                         JSONObject drink = drinkArray.getJSONObject(i);
-                        Integer movieId = drink.getInt(KEY_MOVIE_ID);
-                        String drinkName = drink.getString(KEY_DRINK_NAME);
+                        String drinkName = drink.getString(DRINK_NAME);
+                        String author = drink.getString(AUTHOR);
+                        if(author.equals("null")) {
+                            author = "";
+                        }
+                        Double rating = drink.getDouble(RATING);
                         HashMap<String, String> map = new HashMap<String, String>();
-                        map.put(KEY_MOVIE_ID, movieId.toString());
-                        map.put(KEY_DRINK_NAME, drinkName);
+                        map.put(DRINK_NAME, drinkName.toString());
+                        map.put(AUTHOR, author.toString());
+                        map.put(RATING, rating.toString());
                         drinkList.add(map);
                     }
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
+                return 0;
             }
-            return 0;
+            return 1;
         }
 
         protected void onPostExecute(Integer result) {
@@ -120,34 +130,34 @@ public class RecipeFragment extends Fragment {
      * Updating parsed JSON data into ListView
      */
     private void populateDrinkList() {
-        ListAdapter adapter = new SimpleAdapter(
+        SimpleAdapter adapter = new SimpleAdapter(
                 getActivity(), drinkList,
-                R.layout.fragment_people_list_item, new String[]{KEY_MOVIE_ID,
-                KEY_DRINK_NAME},
-                new int[]{R.id.drinkID, R.id.drinkName});
+                R.layout.fragment_recipe_list_item, new String[]{DRINK_NAME,
+                AUTHOR, RATING},
+                new int[]{R.id.drink_name, R.id.drink_author, R.id.drink_rating});
+        adapter.setViewBinder(new ratingBinder());
         // updating listview
         drinkListView.setAdapter(adapter);
 //        // draw a dividing line
-//        drinkListView.setDivider(ContextCompat.getDrawable(getActivity(), R.drawable.divider));
-//        drinkListView.setDividerHeight(1);
+        drinkListView.setDivider(ContextCompat.getDrawable(getActivity(), R.drawable.divider));
+        drinkListView.setDividerHeight(1);
         //Call DrinkUpdateDeleteActivity when a drink is clicked
         drinkListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 //Check for network connectivity
-                if (com.example.henry.projectcolada.helper.CheckNetworkStatus.isNetworkAvailable(getActivity().getApplicationContext())) {
-                    String drinkid = ((TextView) view.findViewById(R.id.drinkID))
+                if (CheckNetworkStatus.isNetworkAvailable(getActivity().getApplicationContext())) {
+                    String drinkName = ((TextView) view.findViewById(R.id.drink_name))
                             .getText().toString();
                     Intent intent = new Intent(getActivity().getApplicationContext(),
                             null); //TODO: create an activity to view profiles
-                    intent.putExtra(KEY_MOVIE_ID, drinkid);
+                    intent.putExtra(DRINK_NAME, drinkName);
                     startActivityForResult(intent, 20);
 
                 } else {
                     Toast.makeText(getActivity(),
                             "Unable to connect to internet",
                             Toast.LENGTH_LONG).show();
-
                 }
 
 
@@ -173,4 +183,25 @@ public class RecipeFragment extends Fragment {
     public RecipeFragment() {
         // Required empty public constructor
     }
+
+    // Custom binder to set rating and strings in a list element
+    class ratingBinder implements SimpleAdapter.ViewBinder {
+        @Override
+        public boolean setViewValue(View view, Object data, String textRepresentation) {
+            if(view.getId() == R.id.drink_rating){
+                String stringval = (String) data;
+                float ratingValue = Float.parseFloat(stringval);
+                RatingBar ratingBar = (RatingBar) view;
+                ratingBar.setRating(ratingValue);
+                return true;
+            } else if(view.getId() == R.id.drink_author) {
+                String stringval = (String) data;
+                if(stringval.equals("")) {
+                    view.setVisibility(View.GONE);
+                }
+            }
+            return false;
+        }
+    }
 }
+
