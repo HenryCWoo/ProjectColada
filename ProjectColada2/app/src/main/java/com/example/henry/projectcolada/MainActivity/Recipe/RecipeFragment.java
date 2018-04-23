@@ -61,6 +61,15 @@ public class RecipeFragment extends Fragment {
         drinkListView = v.findViewById(R.id.recipeList);
         pDialog = v.findViewById(R.id.recipe_fragment_pb);
         addRecipeFAB = v.findViewById(R.id.add_recipe_fab);
+
+        addRecipeFAB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(getActivity(), "FAB clicked.", Toast.LENGTH_SHORT).show();
+//                Intent intent = new Intent(getActivity().getApplicationContext(), null);
+//                startActivity(intent);
+            }
+        });
         new RecipeFragment.FetchDrinkAsyncTask().execute();
     }
 

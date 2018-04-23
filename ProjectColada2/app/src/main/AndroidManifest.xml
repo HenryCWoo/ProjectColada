@@ -34,7 +34,8 @@
                 android:value=".Authentication.LoginActivity" />
         </activity>
         <activity android:name=".MainActivity.MainActivity" />
-        <activity android:name=".MainActivity.Recipe.ViewRecipe"></activity>
+        <activity android:name=".MainActivity.Recipe.ViewRecipe" />
+        <activity android:name=".MainActivity.Recipe.EditRecipe"></activity>
     </application>
 
 </manifest>
