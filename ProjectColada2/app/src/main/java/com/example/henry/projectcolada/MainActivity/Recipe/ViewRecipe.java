@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -22,6 +23,7 @@ import android.widget.Toast;
 import com.example.henry.projectcolada.R;
 import com.example.henry.projectcolada.helper.CheckNetworkStatus;
 import com.example.henry.projectcolada.helper.HttpJsonParser;
+import com.google.firebase.auth.FirebaseAuth;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -52,8 +54,13 @@ public class ViewRecipe extends AppCompatActivity {
     private static final String AUTHORID = "authorID";
     private static final String INGREDIENT = "ingred";
     private static final String AMOUNT = "amount";
+    private static final String SPIRIT = "spirit";
+    private static final String FLAVOR = "flavor";
     private static final String BASE_URL = "http://drowningindata.web.engr.illinois.edu/colada/";
     private ArrayList<HashMap<String, String>> drinkList;
+    private ArrayList<String> spiritList = new ArrayList<>();
+    private ArrayList<String> flavorList = new ArrayList<>();
+
 
     private String drinkName;
     private TextView title, author, ratingCount, about, instructions, preparation, glass, type, strength, difficulty, theme, served;
@@ -63,12 +70,20 @@ public class ViewRecipe extends AppCompatActivity {
     private ProgressBar progressBar;
     private String[] attributes = new String[13];
     private String[] listOfInst;
+    private LinearLayout spiritLayout, spiritListLayout, flavorListLayout;
+
+    private FirebaseAuth auth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_recipe);
         Intent intent = getIntent();
+
+        // Check to see if this user created this entry, allow them to edit it.
+        auth = FirebaseAuth.getInstance();
+
+        String curUser = auth.getCurrentUser().getUid().toString();
 
         progressBar = (ProgressBar) findViewById(R.id.view_recipe_pb);
 
@@ -89,12 +104,17 @@ public class ViewRecipe extends AppCompatActivity {
         theme = (TextView) findViewById(R.id.recipe_theme);
         served = (TextView) findViewById(R.id.recipe_served);
         preparation = (TextView) findViewById(R.id.recipe_prep);
+        spiritLayout = (LinearLayout) findViewById(R.id.base_spirit);
+        spiritListLayout = (LinearLayout) findViewById(R.id.spirit_list);
+        flavorListLayout = (LinearLayout) findViewById(R.id.flavor_list_layout);
 
         new FetchDrinkDetailsAsyncTask().execute();
         new FetchDrinkIngredAsyncTask().execute();
+        new FetchDrinkSpiritAsyncTask().execute();
+        new FetchDrinkFlavorAsyncTask().execute();
     }
 
-    private class FetchDrinkDetailsAsyncTask extends AsyncTask<String, String, String[][]>{
+    private class FetchDrinkDetailsAsyncTask extends AsyncTask<String, String, Integer>{
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -102,7 +122,7 @@ public class ViewRecipe extends AppCompatActivity {
             progressBar.setVisibility(View.VISIBLE);
         }
         @Override
-        protected String[][] doInBackground(String... strings) {
+        protected Integer doInBackground(String... strings) {
             HttpJsonParser httpJsonParser = new HttpJsonParser();
             Map<String, String> httpParams = new HashMap<>();
             httpParams.put(DRINK_NAME, drinkName);
@@ -130,43 +150,48 @@ public class ViewRecipe extends AppCompatActivity {
                     attributes[10] = jsonResponse.getString(COCKTAILTYPE);
                     attributes[11] = jsonResponse.getString(SERVED);
                     attributes[12] = jsonResponse.getString(AUTHORID);
-
+                    return 0; // success
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            return null;
+            return 1; //failed
         }
 
         @Override
-        protected void onPostExecute(String[][] s) {
-            super.onPostExecute(s);
+        protected void onPostExecute(Integer s) {
             progressBar.setVisibility(View.GONE);
-            runOnUiThread(new Runnable() {
-                public void run() {
-                    //Populate the Edit Texts once the network activity is finished executing
-                    title.setText(drinkName);
-                    author.setText(attributes[0]);
-                    about.setText(attributes[1]);
-                    instructions.setText(attributes[2]);
-                    try{
-                        String stringRating = (String) attributes[3];
-                        float ratingValue = Float.parseFloat(attributes[3]);
-                        ratingBar.setRating(ratingValue);
-                        ratingCount.setText(attributes[4] + " Ratings");
-                    } catch (NullPointerException e){
-                        Log.e("No rating available",e.toString());
-                    }
-                    setPaletteAttr(5, preparation);
-                    setPaletteAttr(6, strength);
-                    setPaletteAttr(7, difficulty);
-                    setPaletteAttr(8, theme);
-                    setPaletteAttr(9,  glass);
-                    setPaletteAttr(10, type);
-                    setPaletteAttr(11, served);
+            if(s == 0){
+                runOnUiThread(new Runnable() {
+                    public void run() {
+                        //Populate the Edit Texts once the network activity is finished executing
+                        title.setText(drinkName);
+                        if(!attributes[0].equals("null")) {
+                            author.setText(attributes[0]);
+                        }
+                        about.setText(attributes[1]);
+                        instructions.setText(attributes[2]);
+                        try{
+                            String stringRating = (String) attributes[3];
+                            float ratingValue = Float.parseFloat(attributes[3]);
+                            ratingBar.setRating(ratingValue);
+                            ratingCount.setText(attributes[4] + " Ratings");
+                        } catch (NullPointerException e){
+                            Log.e("No rating available",e.toString());
+                        }
+                        setPaletteAttr(5, preparation);
+                        setPaletteAttr(6, strength);
+                        setPaletteAttr(7, difficulty);
+                        setPaletteAttr(8, theme);
+                        setPaletteAttr(9,  glass);
+                        setPaletteAttr(10, type);
+                        setPaletteAttr(11, served);
 //                    authorID.setText(attributes[11]);
-                }
-            });
+                    }
+                });
+            } else {
+                Toast.makeText(ViewRecipe.this, "Failed to get data.", Toast.LENGTH_LONG).show();
+            }
         }
     }
 
@@ -206,7 +231,11 @@ public class ViewRecipe extends AppCompatActivity {
                         String amount = drink.getString(AMOUNT);
                         HashMap<String, String> map = new HashMap<String, String>();
                         map.put(INGREDIENT, ingred.toString());
-                        map.put(AMOUNT, amount.toString());
+                        if(!amount.toString().equals("null")) {
+                            map.put(AMOUNT, amount.toString());
+                        } else {
+                            map.put(AMOUNT, "");
+                        }
                         drinkList.add(map);
                     }
                 }
@@ -247,6 +276,127 @@ public class ViewRecipe extends AppCompatActivity {
         ingredients.setDivider(ContextCompat.getDrawable(this, R.drawable.divider));
         ingredients.setDividerHeight(1);
     }
+
+    private class FetchDrinkSpiritAsyncTask extends AsyncTask<String, String, Integer> {
+
+        @Override
+        protected Integer doInBackground(String... params) {
+            HttpJsonParser httpJsonParser = new HttpJsonParser();
+            Map<String, String> httpParams = new HashMap<>();
+            httpParams.put(DRINK_NAME, drinkName);
+            JSONObject jsonObject = httpJsonParser.makeHttpRequest(
+                    BASE_URL + "fetch_base_spirit.php", "GET", httpParams);
+            Log.v("Fetch drinks", jsonObject.toString());
+            try {
+                int success = jsonObject.getInt(KEY_SUCCESS);
+                JSONArray drinkArray;
+                if (success == 1) {
+                    drinkArray = jsonObject.getJSONArray(KEY_DATA);
+                    //Iterate through the response and populate movies list
+                    for (int i = 0; i < drinkArray.length(); i++) {
+                        JSONObject drink = drinkArray.getJSONObject(i);
+                        String spirit = drink.getString(SPIRIT);
+                        if(!spirit.toString().equals("null")) {
+                            spiritList.add(spirit.toString());
+                        }
+                    }
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+                return 0;
+            }
+            return 1;
+        }
+
+        protected void onPostExecute(Integer result) {
+            if(result != 0){
+                runOnUiThread(new Runnable() {
+                    public void run() {
+                        if(spiritList.size() > 0){
+                            populateSpiritList();
+                        } else {
+                            spiritLayout.setVisibility(View.GONE);
+                        }
+                    }
+                });
+            } else {
+                Toast.makeText(ViewRecipe.this, "Failed to get ingredients.", Toast.LENGTH_LONG).show();
+            }
+
+        }
+
+    }
+
+    private void populateSpiritList(){
+        for(String spirit : spiritList){
+            TextView curSpirit = new TextView(this);
+            curSpirit.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            curSpirit.setTextSize(14);
+            curSpirit.setText(spirit);
+            spiritListLayout.addView(curSpirit);
+        }
+    }
+
+    private class FetchDrinkFlavorAsyncTask extends AsyncTask<String, String, Integer> {
+
+        @Override
+        protected Integer doInBackground(String... params) {
+            HttpJsonParser httpJsonParser = new HttpJsonParser();
+            Map<String, String> httpParams = new HashMap<>();
+            httpParams.put(DRINK_NAME, drinkName);
+            JSONObject jsonObject = httpJsonParser.makeHttpRequest(
+                    BASE_URL + "fetch_drink_flavor.php", "GET", httpParams);
+            Log.v("Fetch drinks", jsonObject.toString());
+            try {
+                int success = jsonObject.getInt(KEY_SUCCESS);
+                JSONArray drinkArray;
+                if (success == 1) {
+                    drinkArray = jsonObject.getJSONArray(KEY_DATA);
+                    //Iterate through the response and populate movies list
+                    for (int i = 0; i < drinkArray.length(); i++) {
+                        JSONObject drink = drinkArray.getJSONObject(i);
+                        String flavor = drink.getString(FLAVOR);
+                        if(!flavor.toString().equals("null")) {
+                            flavorList.add(flavor.toString());
+                        }
+                    }
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+                return 0;
+            }
+            return 1;
+        }
+
+        protected void onPostExecute(Integer result) {
+            if(result != 0){
+                runOnUiThread(new Runnable() {
+                    public void run() {
+                        if(flavorList.size() > 0){
+                            populateFlavorList();
+                        } else {
+                            flavorListLayout.setVisibility(View.GONE);
+                        }
+                    }
+                });
+            } else {
+                Toast.makeText(ViewRecipe.this, "Failed to get ingredients.", Toast.LENGTH_LONG).show();
+            }
+
+        }
+
+    }
+
+    private void populateFlavorList(){
+        for(String flavor : flavorList){
+            TextView curFlavor = new TextView(this);
+            curFlavor.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            curFlavor.setTextSize(14);
+            curFlavor.setText(flavor);
+            flavorListLayout.addView(curFlavor);
+        }
+    }
+
 
     @Override
     protected void onResume() {

@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
@@ -14,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.RatingBar;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
@@ -41,7 +43,8 @@ public class RecipeFragment extends Fragment {
     private static final String BASE_URL = "http://drowningindata.web.engr.illinois.edu/colada/";
     private ArrayList<HashMap<String, String>> drinkList;
     private ListView drinkListView;
-    private ProgressDialog pDialog;
+    private ProgressBar pDialog;
+    private FloatingActionButton addRecipeFAB;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -56,6 +59,8 @@ public class RecipeFragment extends Fragment {
         View v = getView();
 
         drinkListView = v.findViewById(R.id.recipeList);
+        pDialog = v.findViewById(R.id.recipe_fragment_pb);
+        addRecipeFAB = v.findViewById(R.id.add_recipe_fab);
         new RecipeFragment.FetchDrinkAsyncTask().execute();
     }
 
@@ -67,11 +72,7 @@ public class RecipeFragment extends Fragment {
         protected void onPreExecute() {
             super.onPreExecute();
             //Display progress bar
-            pDialog = new ProgressDialog(getActivity());
-            pDialog.setMessage("Loading drinks. Please wait.");
-            pDialog.setIndeterminate(true);
-            pDialog.setCancelable(false);
-            pDialog.show();
+            pDialog.setVisibility(View.VISIBLE);
         }
 
         @Override
@@ -79,7 +80,7 @@ public class RecipeFragment extends Fragment {
             com.example.henry.projectcolada.helper.HttpJsonParser httpJsonParser = new com.example.henry.projectcolada.helper.HttpJsonParser();
             JSONObject jsonObject = httpJsonParser.makeHttpRequest(
                     BASE_URL + "fetch_all_drinks.php", "GET", null);
-            Log.v("Fetch drinks", jsonObject.toString());
+//            Log.v("Fetch drinks", jsonObject.toString());
             try {
                 int success = jsonObject.getInt(KEY_SUCCESS);
                 JSONArray drinkArray;
@@ -110,7 +111,7 @@ public class RecipeFragment extends Fragment {
         }
 
         protected void onPostExecute(Integer result) {
-            pDialog.dismiss();
+            pDialog.setVisibility(View.GONE);
             if(result != 0){
                 getActivity().runOnUiThread(new Runnable() {
                     public void run() {
@@ -200,6 +201,12 @@ public class RecipeFragment extends Fragment {
             }
             return false;
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        pDialog.setVisibility(View.GONE);
     }
 }
 
