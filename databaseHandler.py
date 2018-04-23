@@ -20,10 +20,11 @@ def removeDupe(seq):
     return [x for x in seq if not (x in seen or seen_add(x))]
 
 # Open database connection
-db = MySQLdb.connect(host="192.17.90.133",
-                      user='drowningindata_admin',
-                      password='ColadaAdminPwd',
-                      db='drowningindata_colada')
+#PROVIDE CREDENTIALS HERE
+db = MySQLdb.connect(host=,
+                      user=,
+                      password=,
+                      db=)
 
 dictKeys = ["Drink Name", "Author", "About", "Instructions", "Rating", 
             "Rating Count", "Prep", "Strength", "Difficulty", "Theme",
