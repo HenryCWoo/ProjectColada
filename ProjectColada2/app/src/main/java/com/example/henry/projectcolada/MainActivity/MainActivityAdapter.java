@@ -5,6 +5,8 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
+import com.example.henry.projectcolada.MainActivity.Recipe.RecipeFragment;
+
 /**
  * Created by h3nry on 4/20/2018.
  */

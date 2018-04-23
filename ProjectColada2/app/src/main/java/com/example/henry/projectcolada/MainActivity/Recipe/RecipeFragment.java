@@ -1,4 +1,4 @@
-package com.example.henry.projectcolada.MainActivity;
+package com.example.henry.projectcolada.MainActivity.Recipe;
 
 
 import android.app.ProgressDialog;
@@ -13,7 +13,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.RatingBar;
 import android.widget.SimpleAdapter;
@@ -150,10 +149,9 @@ public class RecipeFragment extends Fragment {
                     String drinkName = ((TextView) view.findViewById(R.id.drink_name))
                             .getText().toString();
                     Intent intent = new Intent(getActivity().getApplicationContext(),
-                            null); //TODO: create an activity to view profiles
+                            ViewRecipe.class);
                     intent.putExtra(DRINK_NAME, drinkName);
                     startActivityForResult(intent, 20);
-
                 } else {
                     Toast.makeText(getActivity(),
                             "Unable to connect to internet",
