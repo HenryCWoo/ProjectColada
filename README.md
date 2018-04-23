@@ -6,6 +6,7 @@ Browse cocktails that suit the occasion, the theme, the mood, the time and impre
 
 Don't know what to make with the ingredients you have at hand? Use the AI Bartender to build you a never-before-seen mixture!
 
-Notes:
-Uses Firebase for user authentication.
+Notes:\n
+Android Project ProjectColada is deprecated, ProjectColada2 in is development.\n
+Uses Firebase for user authentication.\n
 SQL database used to hold all recipes, but does not contain user-sensitive information.
