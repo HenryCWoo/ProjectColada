@@ -36,6 +36,7 @@ import org.json.JSONObject;
 import org.tensorflow.contrib.android.TensorFlowInferenceInterface;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
@@ -69,7 +70,7 @@ public class AIFragment extends Fragment {
         results = v.findViewById(R.id.results);
         drinkList = new ArrayList<>();
         selectionList = v.findViewById(R.id.selection_list);
-        for(int i=0; i<rawList.length; i++) {
+        for (int i = 0; i < rawList.length; i++) {
             HashMap<String, String> map = new HashMap<String, String>();
             map.put(DRINKNAME, rawList[i]);
             map.put("INDEX", String.valueOf(i));
@@ -89,15 +90,30 @@ public class AIFragment extends Fragment {
                 indices.add(selection);
                 TextView curBox = (TextView) view.findViewById(R.id.ai_drink_element);
                 String added = curBox.getText().toString();
-                Toast.makeText(getActivity(), added+" added.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), added + " added.", Toast.LENGTH_SHORT).show();
             }
         });
         generate = v.findViewById(R.id.generate);
         generate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                selectionList.setVisibility(View.GONE);
-                new GetComboAsyncTask().execute();
+//                selectionList.setVisibility(View.GONE);
+//                new GetComboAsyncTask().execute();
+                inferenceInterface = new TensorFlowInferenceInterface(getActivity().getAssets(), "tensorflow_lite_coladaAIModel.pb");
+                ArrayList<ArrayList<Integer>> combos = new ArrayList<>();
+                tensor = new float[rawList.length];
+                for (int i = 0; i < rawList.length; i++) {
+                    tensor[i] = 0;
+                }
+                for (int i = 0; i < indices.size(); i++) {
+                    tensor[indices.get(i)] = 1;
+                }
+
+//            for(int i=0; i<10; i++){
+//                getRandom(indices);
+//            }
+                output = predict(tensor);
+                Toast.makeText(getActivity(), Arrays.toString(output), Toast.LENGTH_LONG).show();
             }
         });
 
@@ -120,12 +136,13 @@ public class AIFragment extends Fragment {
             inferenceInterface = new TensorFlowInferenceInterface(getActivity().getAssets(), "tensorflow_lite_coladaAIModel.pb");
             ArrayList<ArrayList<Integer>> combos = new ArrayList<>();
             tensor = new float[rawList.length];
-            for(int i=0; i<rawList.length;i++){
+            for (int i = 0; i < rawList.length; i++) {
                 tensor[i] = 0;
             }
-            for(int i=0; i<indices.size(); i++){
+            for (int i = 0; i < indices.size(); i++) {
                 tensor[indices.get(i)] = 1;
             }
+
 //            for(int i=0; i<10; i++){
 //                getRandom(indices);
 //            }
@@ -135,28 +152,28 @@ public class AIFragment extends Fragment {
 
         protected void onPostExecute(int result) {
             tensorPB.setVisibility(View.GONE);
-            if (result != 0) {
-                getActivity().runOnUiThread(new Runnable() {
-                    public void run() {
-                        results.setVisibility(View.VISIBLE);
-                        results.setText(String.valueOf(output[0]));
-                    }
-                });
-            }
+            getActivity().runOnUiThread(new Runnable() {
+                public void run() {
+//                    results.setVisibility(View.VISIBLE);
+//                    results.setText(String.valueOf(output[0]));
+                    Toast.makeText(getActivity(), Arrays.toString(tensor), Toast.LENGTH_LONG).show();
+                }
+            });
+
         }
     }
 
-    private float[] predict(float[] input){
+    private float[] predict(float[] input) {
         // model has only 1 output neuron
-        float output[] = new float[1];
+        float thisOutput[] = new float[1];
 
         // feed network with input of shape (1,input.length) = (1,2)
         inferenceInterface.feed("dense_1_input", input, 1, input.length);
         inferenceInterface.run(new String[]{"dense_2/Relu"});
-        inferenceInterface.fetch("dense_2/Relu", output);
+        inferenceInterface.fetch("dense_2/Relu", thisOutput);
 
         // return prediction
-        return output;
+        return thisOutput;
     }
 
     private int getRandom(ArrayList<Integer> array) {
