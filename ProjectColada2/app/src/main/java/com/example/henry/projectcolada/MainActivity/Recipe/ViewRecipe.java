@@ -129,6 +129,7 @@ public class ViewRecipe extends AppCompatActivity {
                 intent.putExtra("about", about.getText());
                 intent.putExtra("instructions", instructions.getText());
                 startActivity(intent);
+                finish();
             }
         });
 

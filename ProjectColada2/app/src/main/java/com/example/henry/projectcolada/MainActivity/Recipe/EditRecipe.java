@@ -63,16 +63,16 @@ public class EditRecipe extends AppCompatActivity {
         if (id == R.id.cancel_icon) {
             finish();
         } else if (id == R.id.delete_icon) {
-            if(mode.equals("add")) {
+            if (mode.equals("add")) {
                 finish();
             } else {
-                //            if (CheckNetworkStatus.isNetworkAvailable(getApplicationContext())) {
-//                deleteDrink();
-//            } else {
-//                Toast.makeText(EditRecipe.this,
-//                        "Unable to connect to internet",
-//                        Toast.LENGTH_LONG).show();
-//            }
+                if (CheckNetworkStatus.isNetworkAvailable(getApplicationContext())) {
+                    new DeleteDrinkAsyncTask().execute();
+                } else {
+                    Toast.makeText(EditRecipe.this,
+                            "Unable to connect to internet",
+                            Toast.LENGTH_LONG).show();
+                }
             }
 //            Toast.makeText(EditRecipe.this, "DELETE", Toast.LENGTH_SHORT).show();
         } else if (id == R.id.add_icon) {
@@ -125,6 +125,7 @@ public class EditRecipe extends AppCompatActivity {
             editPB.setVisibility(View.VISIBLE);
             overlay.setVisibility(View.VISIBLE);
         }
+
         @Override
         protected Integer doInBackground(String... params) {
             HttpJsonParser httpJsonParser = new HttpJsonParser();
@@ -182,7 +183,7 @@ public class EditRecipe extends AppCompatActivity {
             httpParams.put(INSTRUCTIONS, instrText);
             httpParams.put("oldDrinkName", oldDrinkName);
             //Populating request parameters
-            for (int i=0; i<=paramValues.length-1; i++) {
+            for (int i = 0; i <= paramValues.length - 1; i++) {
                 if (!paramValues[i].equals("N/A")) {
                     httpParams.put(paramKeys[i], paramValues[i]);
                 } else {
@@ -190,7 +191,7 @@ public class EditRecipe extends AppCompatActivity {
                 }
             }
             JSONObject jsonObject;
-            if(mode.equals("add")) {
+            if (mode.equals("add")) {
                 jsonObject = httpJsonParser.makeHttpRequest(
                         BASE_URL + "add_drink.php", "POST", httpParams);
             } else {
@@ -214,7 +215,53 @@ public class EditRecipe extends AppCompatActivity {
                     overlay.setVisibility(View.GONE);
                     if (success == 1) {
                         //Display success message
-                        Toast.makeText(EditRecipe.this,"Drink successfully added.", Toast.LENGTH_LONG).show();
+                        Toast.makeText(EditRecipe.this, "Drink successfully added.", Toast.LENGTH_LONG).show();
+                        Intent i = getIntent();
+                        //send result code 20 to notify about movie update
+                        setResult(20, i);
+                        //Finish ths activity and go back to listing activity
+                        finish();
+                    } else {
+                        Toast.makeText(EditRecipe.this,
+                                "Error occurred while adding drink",
+                                Toast.LENGTH_LONG).show();
+                    }
+                }
+            });
+        }
+    }
+
+    /**
+     * AsyncTask for adding a drink
+     */
+    private class DeleteDrinkAsyncTask extends AsyncTask<String, String, Integer> {
+
+        @Override
+        protected Integer doInBackground(String... params) {
+            HttpJsonParser httpJsonParser = new HttpJsonParser();
+            Map<String, String> httpParams = new HashMap<>();
+            httpParams.put(DRINKNAME, oldDrinkName);
+            JSONObject jsonObject;
+            jsonObject = httpJsonParser.makeHttpRequest(
+                    BASE_URL + "delete_drink.php", "POST", httpParams);
+            try {
+                Log.v("DELETING DRINK:", jsonObject.toString());
+                success = jsonObject.getInt(KEY_SUCCESS);
+                return success;
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            return 0;
+        }
+
+        protected void onPostExecute(Integer result) {
+            runOnUiThread(new Runnable() {
+                public void run() {
+                    editPB.setVisibility(View.GONE);
+                    overlay.setVisibility(View.GONE);
+                    if (success == 1) {
+                        //Display success message
+                        Toast.makeText(EditRecipe.this, "Drink successfully deleted.", Toast.LENGTH_LONG).show();
                         Intent i = getIntent();
                         //send result code 20 to notify about movie update
                         setResult(20, i);
@@ -296,7 +343,7 @@ public class EditRecipe extends AppCompatActivity {
 
         auth = FirebaseAuth.getInstance();
         authorID = auth.getCurrentUser().getUid();
-        switch(mode){
+        switch (mode) {
             case "add":
                 break;
             case "edit":
@@ -317,13 +364,13 @@ public class EditRecipe extends AppCompatActivity {
         }
     }
 
-    private int getIndex(Spinner spinner, String myString){
+    private int getIndex(Spinner spinner, String myString) {
         int index = 0;
-        if(myString.equals("null")){ //display "N/A"
+        if (myString.equals("null")) { //display "N/A"
             return index;
         }
-        for (int i=0;i<spinner.getCount();i++){
-            if (spinner.getItemAtPosition(i).equals(myString)){
+        for (int i = 0; i < spinner.getCount(); i++) {
+            if (spinner.getItemAtPosition(i).equals(myString)) {
                 index = i;
             }
         }
