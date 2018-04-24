@@ -152,9 +152,7 @@ public class RecipeFragment extends Fragment {
             } else {
                 Toast.makeText(getActivity(), "Failed to get data.", Toast.LENGTH_LONG).show();
             }
-
         }
-
     }
 
     /**
@@ -189,11 +187,8 @@ public class RecipeFragment extends Fragment {
                             "Unable to connect to internet",
                             Toast.LENGTH_LONG).show();
                 }
-
-
             }
         });
-
     }
 
     @Override

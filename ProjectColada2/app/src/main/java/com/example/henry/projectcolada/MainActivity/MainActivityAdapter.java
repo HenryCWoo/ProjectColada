@@ -5,6 +5,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
+import com.example.henry.projectcolada.MainActivity.AI.AIFragment;
 import com.example.henry.projectcolada.MainActivity.Recipe.RecipeFragment;
 import com.example.henry.projectcolada.MainActivity.Suggestion.SuggestionFragment;
 
@@ -33,9 +34,9 @@ public class MainActivityAdapter extends FragmentPagerAdapter {
         if (position == 0) {
             return new RecipeFragment();
         } else if (position == 1) {
-            return new SuggestionFragment();
-        } else {
             return new AIFragment();
+        } else {
+            return new SuggestionFragment();
         }
     }
 
@@ -49,18 +50,12 @@ public class MainActivityAdapter extends FragmentPagerAdapter {
     @Override
     public CharSequence getPageTitle(int position) {
         switch(position) {
-//            case 0:
-//                return "People";
-//            case 1:
-//                return "Recipes";
-//            case 2:
-//                return "AI";
             case 0:
                 return "Recipes";
             case 1:
-                return "Suggestions";
-            case 2:
                 return "AI";
+            case 2:
+                return "Suggestions";
             default: return null;
         }
     }
