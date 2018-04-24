@@ -35,6 +35,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.tensorflow.contrib.android.TensorFlowInferenceInterface;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -113,10 +114,14 @@ public class AIFragment extends Fragment {
 //                getRandom(indices);
 //            }
                 output = predict(tensor);
-                Toast.makeText(getActivity(), Arrays.toString(output), Toast.LENGTH_LONG).show();
+                Toast.makeText(getActivity(), "Expected rating: "+String.valueOf(roundTwoDecimals(output[0])), Toast.LENGTH_LONG).show();
             }
         });
 
+    }
+    double roundTwoDecimals(double d) {
+        DecimalFormat twoDForm = new DecimalFormat("#.##");
+        return Double.valueOf(twoDForm.format(d));
     }
 
     /**

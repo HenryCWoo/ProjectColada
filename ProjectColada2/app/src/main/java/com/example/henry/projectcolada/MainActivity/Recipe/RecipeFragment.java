@@ -26,6 +26,7 @@ import android.widget.Toast;
 
 import com.example.henry.projectcolada.R;
 import com.example.henry.projectcolada.helper.CheckNetworkStatus;
+import com.example.henry.projectcolada.helper.HttpJsonParser;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -33,6 +34,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -88,11 +90,81 @@ public class RecipeFragment extends Fragment {
 
             @Override
             public void afterTextChanged(Editable editable) {
-
+                String query = searchDrinks.getText().toString().trim();
+                if(query.isEmpty()){
+                    new RecipeFragment.FetchDrinkAsyncTask().execute();
+                } else {
+                    new RecipeFragment.SearchDrinksAsyncTask().execute(query);
+                }
             }
         });
 
-        new RecipeFragment.FetchDrinkAsyncTask().execute();
+//        new RecipeFragment.FetchDrinkAsyncTask().execute();
+    }
+
+    /**
+     * Fetches the list of drinks from the server
+     */
+    private class SearchDrinksAsyncTask extends AsyncTask<String, String, Integer> {
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            //Display progress bar
+            pDialog.setVisibility(View.VISIBLE);
+        }
+
+        @Override
+        protected Integer doInBackground(String... params) {
+            Log.v("query", params[0]);
+            HttpJsonParser httpJsonParser = new HttpJsonParser();
+            Map<String, String> httpParams = new HashMap<>();
+            httpParams.put(DRINK_NAME, params[0]);
+            JSONObject jsonObject = httpJsonParser.makeHttpRequest(
+                    BASE_URL + "search_drinks.php", "GET", httpParams);
+            Log.v("Fetch drinks", jsonObject.toString());
+            try {
+                int success = jsonObject.getInt(KEY_SUCCESS);
+                JSONArray drinkArray;
+                if (success == 1) {
+                    drinkList = new ArrayList<>();
+                    drinkArray = jsonObject.getJSONArray(KEY_DATA);
+                    //Iterate through the response and populate movies list
+                    for (int i = 0; i < drinkArray.length(); i++) {
+                        JSONObject drink = drinkArray.getJSONObject(i);
+                        String drinkName = drink.getString(DRINK_NAME);
+                        String author = drink.getString(AUTHOR);
+                        if (author.equals("null")) {
+                            author = "";
+                        }
+                        Double rating = drink.getDouble(RATING);
+                        HashMap<String, String> map = new HashMap<String, String>();
+                        map.put(DRINK_NAME, drinkName.toString());
+                        map.put(AUTHOR, author.toString());
+                        map.put(RATING, rating.toString());
+                        drinkList.add(map);
+                    }
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+                return 0;
+            }
+            return 1;
+        }
+
+        protected void onPostExecute(Integer result) {
+            pDialog.setVisibility(View.GONE);
+            if(result != 0){
+                getActivity().runOnUiThread(new Runnable() {
+                    public void run() {
+                        populateDrinkList();
+                    }
+                });
+            } else {
+                Toast.makeText(getActivity(), "Failed to get data.", Toast.LENGTH_LONG).show();
+            }
+
+        }
+
     }
 
     /**
