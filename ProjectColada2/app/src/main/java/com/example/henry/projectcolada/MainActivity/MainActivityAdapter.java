@@ -33,18 +33,19 @@ public class MainActivityAdapter extends FragmentPagerAdapter {
 //        }
         if (position == 0) {
             return new RecipeFragment();
-        } else if (position == 1) {
+        } else  {
             return new AIFragment();
-        } else {
-            return new SuggestionFragment();
         }
+//        } else {
+//            return new SuggestionFragment();
+//        }
     }
 
     // determines number of tabs
     @Override
     public int getCount() {
-        return 3;
-//        return 2;
+//        return 3;
+        return 2;
     }
 
     @Override
@@ -54,8 +55,8 @@ public class MainActivityAdapter extends FragmentPagerAdapter {
                 return "Recipes";
             case 1:
                 return "AI";
-            case 2:
-                return "Suggestions";
+//            case 2:
+//                return "Suggestions";
             default: return null;
         }
     }
