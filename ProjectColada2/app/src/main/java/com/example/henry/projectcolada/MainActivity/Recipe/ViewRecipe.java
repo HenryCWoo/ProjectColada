@@ -33,6 +33,7 @@ import org.w3c.dom.Text;
 import java.io.IOError;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ViewRecipe extends AppCompatActivity {
@@ -60,7 +61,7 @@ public class ViewRecipe extends AppCompatActivity {
     private ArrayList<HashMap<String, String>> drinkList;
     private ArrayList<String> spiritList = new ArrayList<>();
     private ArrayList<String> flavorList = new ArrayList<>();
-
+    private ArrayList<String> ingredsList = new ArrayList<>(), partsList = new ArrayList<>();
 
     private String drinkName;
     private TextView title, author, ratingCount, about, instructions, preparation, glass, type, strength, difficulty, theme, served;
@@ -128,6 +129,8 @@ public class ViewRecipe extends AppCompatActivity {
                 }
                 intent.putExtra("about", about.getText());
                 intent.putExtra("instructions", instructions.getText());
+                intent.putExtra("ingreds", ingredsList);
+                intent.putExtra("parts", partsList);
                 startActivity(intent);
                 finish();
             }
@@ -258,10 +261,13 @@ public class ViewRecipe extends AppCompatActivity {
                         String amount = drink.getString(AMOUNT);
                         HashMap<String, String> map = new HashMap<String, String>();
                         map.put(INGREDIENT, ingred.toString());
+                        ingredsList.add(ingred.toString());//used to send to edit screen
                         if(!amount.toString().equals("null")) {
                             map.put(AMOUNT, amount.toString());
+                            partsList.add(amount.toString());
                         } else {
                             map.put(AMOUNT, "");
+                            partsList.add("");
                         }
                         drinkList.add(map);
                     }

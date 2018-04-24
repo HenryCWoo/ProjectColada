@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -43,6 +44,9 @@ public class EditRecipe extends AppCompatActivity {
     private static final String AUTHOR = "author";
     private static final String ABOUT = "about";
     private static final String AUTHORID = "authorID";
+    private static final String INGREDIENTS = "ingredients";
+    private static final String PARTS = "parts";
+
 
     private EditText title, about, instructions;
     private Spinner spiritSpin, glassSpin, typeSpin, strengthSpin, difficultySpin, themeSpin, serveSpin, prepSpin, flavor_spin;
@@ -57,6 +61,8 @@ public class EditRecipe extends AppCompatActivity {
     private LinearLayout ingredLL;
 
     private String mode, oldDrinkName;
+    private int ingredNum = 0;
+    private ArrayList<String> ingredsList, partsList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -124,6 +130,10 @@ public class EditRecipe extends AppCompatActivity {
 
         auth = FirebaseAuth.getInstance();
         authorID = auth.getCurrentUser().getUid();
+
+        ingredLL = (LinearLayout) findViewById(R.id.ingred_LL);
+        ingredAdd = (ImageView) findViewById(R.id.add_ingredient);
+
         switch (mode) {
             case "add":
                 break;
@@ -142,36 +152,75 @@ public class EditRecipe extends AppCompatActivity {
                 serveSpin.setSelection(getIndex(serveSpin, attributes[11]));
                 prepSpin.setSelection(getIndex(prepSpin, attributes[5]));
                 flavor_spin.setSelection(getIndex(flavor_spin, prevIntent.getStringExtra("flavor")));
+                ingredsList = prevIntent.getStringArrayListExtra("ingreds");
+                partsList = prevIntent.getStringArrayListExtra("parts");
+                for(int i=0; i<ingredsList.size(); i++){
+                    addIngredSetEntry(ingredsList.get(i), partsList.get(i));
+                }
         }
-
-        ingredLL = (LinearLayout) findViewById(R.id.ingred_LL);
-        ingredAdd = (ImageView) findViewById(R.id.add_ingredient);
 
         ingredAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                LinearLayout newLL = new LinearLayout(EditRecipe.this);
-                newLL.setOrientation(LinearLayout.HORIZONTAL);
-                newLL.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-                EditText addIngredEntry = new EditText(EditRecipe.this);
-                EditText addPartEntry = new EditText(EditRecipe.this);
-
-                addIngredEntry.setTextSize(14);
-                LinearLayout.LayoutParams ingredEntryParam = new LinearLayout.LayoutParams(0,ViewGroup.LayoutParams.WRAP_CONTENT, 7f);
-                addIngredEntry.setLayoutParams(ingredEntryParam);
-                addIngredEntry.setHint("Ingredient");
-
-                addPartEntry.setTextSize(14);
-                LinearLayout.LayoutParams partEntryParam = new LinearLayout.LayoutParams(0,ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
-                addPartEntry.setLayoutParams(partEntryParam);
-                addPartEntry.setHint("Part");
-
-                newLL.addView(addIngredEntry);
-                newLL.addView(addPartEntry);
-                ingredLL.addView(newLL);
+                addIngredEntry();
             }
         });
     }
+
+    private void addIngredEntry(){
+        LinearLayout newLL = new LinearLayout(EditRecipe.this);
+        newLL.setOrientation(LinearLayout.HORIZONTAL);
+        newLL.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        EditText addIngredEntry = new EditText(EditRecipe.this);
+        EditText addPartEntry = new EditText(EditRecipe.this);
+
+        addIngredEntry.setTextSize(14);
+        LinearLayout.LayoutParams ingredEntryParam = new LinearLayout.LayoutParams(0,ViewGroup.LayoutParams.WRAP_CONTENT, 7f);
+        addIngredEntry.setLayoutParams(ingredEntryParam);
+        addIngredEntry.setHint("Ingredient");
+        addIngredEntry.setId(ingredNum+12345678);
+
+        addPartEntry.setTextSize(14);
+        LinearLayout.LayoutParams partEntryParam = new LinearLayout.LayoutParams(0,ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+        addPartEntry.setLayoutParams(partEntryParam);
+        addPartEntry.setHint("Part");
+        addPartEntry.setInputType(InputType.TYPE_CLASS_NUMBER);
+        addPartEntry.setId(ingredNum+87654321);
+
+        ingredNum++;
+        newLL.addView(addIngredEntry);
+        newLL.addView(addPartEntry);
+        ingredLL.addView(newLL);
+    }
+
+    private void addIngredSetEntry(String mIngred, String mPart){
+        LinearLayout newLL = new LinearLayout(EditRecipe.this);
+        newLL.setOrientation(LinearLayout.HORIZONTAL);
+        newLL.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        EditText addIngredEntry = new EditText(EditRecipe.this);
+        EditText addPartEntry = new EditText(EditRecipe.this);
+
+        addIngredEntry.setTextSize(14);
+        LinearLayout.LayoutParams ingredEntryParam = new LinearLayout.LayoutParams(0,ViewGroup.LayoutParams.WRAP_CONTENT, 7f);
+        addIngredEntry.setLayoutParams(ingredEntryParam);
+        addIngredEntry.setHint("Ingredient");
+        addIngredEntry.setText(mIngred, TextView.BufferType.EDITABLE);
+        addIngredEntry.setId(ingredNum+12345678);
+
+        addPartEntry.setTextSize(14);
+        LinearLayout.LayoutParams partEntryParam = new LinearLayout.LayoutParams(0,ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+        addPartEntry.setLayoutParams(partEntryParam);
+        addPartEntry.setHint("Part");
+        addPartEntry.setText(mPart, TextView.BufferType.EDITABLE);
+        addPartEntry.setInputType(InputType.TYPE_CLASS_NUMBER);
+        addPartEntry.setId(ingredNum+87654321);
+
+        ingredNum++;
+        newLL.addView(addIngredEntry);
+        newLL.addView(addPartEntry);
+        ingredLL.addView(newLL);
+    }
+
 
     // handle button activities
     @Override
@@ -315,6 +364,18 @@ public class EditRecipe extends AppCompatActivity {
             } else {
                 jsonObject = httpJsonParser.makeHttpRequest(
                         BASE_URL + "update_drink.php", "POST", httpParams);
+            }
+
+            httpJsonParser = new HttpJsonParser();
+            httpParams = new HashMap<>();
+            for (int i=0; i<ingredNum; i++){
+                EditText curIngred = (EditText) findViewById(i+12345678);
+                EditText curParts = (EditText) findViewById(i+87654321);
+                httpParams.put(DRINKNAME, titleText);
+                httpParams.put(INGREDIENTS, curIngred.getText().toString());
+                httpParams.put(PARTS, curParts.getText().toString());
+                jsonObject = httpJsonParser.makeHttpRequest(
+                        BASE_URL + "add_ingred.php", "POST", httpParams);
             }
             try {
                 Log.v("RESULT OF ADDING DRINK:", jsonObject.toString());
