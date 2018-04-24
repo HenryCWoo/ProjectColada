@@ -69,9 +69,9 @@ public class ViewRecipe extends AppCompatActivity {
     private FloatingActionButton editFAB;
     private ProgressBar progressBar;
     private String[] attributes = new String[13];
-    private String[] listOfInst;
     private LinearLayout spiritLayout, spiritListLayout, flavorListLayout;
 
+    private String curUserID;
     private FirebaseAuth auth;
 
     @Override
@@ -83,7 +83,7 @@ public class ViewRecipe extends AppCompatActivity {
         // Check to see if this user created this entry, allow them to edit it.
         auth = FirebaseAuth.getInstance();
 
-        String curUser = auth.getCurrentUser().getUid().toString();
+        curUserID = auth.getCurrentUser().getUid().toString();
 
         progressBar = (ProgressBar) findViewById(R.id.view_recipe_pb);
 
@@ -107,6 +107,30 @@ public class ViewRecipe extends AppCompatActivity {
         spiritLayout = (LinearLayout) findViewById(R.id.base_spirit);
         spiritListLayout = (LinearLayout) findViewById(R.id.spirit_list);
         flavorListLayout = (LinearLayout) findViewById(R.id.flavor_list_layout);
+
+        editFAB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+//                Toast.makeText(getActivity(), "FAB clicked.", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(getApplicationContext(), EditRecipe.class);
+                intent.putExtra("mode", "edit");
+                intent.putExtra(DRINK_NAME, drinkName);
+                intent.putExtra("Attributes", attributes);
+                if(flavorList.size() == 0){
+                    intent.putExtra("flavor", "null");
+                } else {
+                    intent.putExtra("flavor", flavorList.get(0));
+                }
+                if(spiritList.size() == 0){
+                    intent.putExtra("spirit", "null");
+                } else {
+                    intent.putExtra("spirit", spiritList.get(0));
+                }
+                intent.putExtra("about", about.getText());
+                intent.putExtra("instructions", instructions.getText());
+                startActivity(intent);
+            }
+        });
 
         new FetchDrinkDetailsAsyncTask().execute();
         new FetchDrinkIngredAsyncTask().execute();
@@ -186,7 +210,9 @@ public class ViewRecipe extends AppCompatActivity {
                         setPaletteAttr(9,  glass);
                         setPaletteAttr(10, type);
                         setPaletteAttr(11, served);
-//                    authorID.setText(attributes[11]);
+                        if(attributes[12].equals(curUserID)){
+                            editFAB.setVisibility(View.VISIBLE);
+                        }
                     }
                 });
             } else {

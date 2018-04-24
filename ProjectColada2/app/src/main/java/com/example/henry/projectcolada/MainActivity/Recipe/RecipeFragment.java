@@ -67,6 +67,7 @@ public class RecipeFragment extends Fragment {
             public void onClick(View view) {
 //                Toast.makeText(getActivity(), "FAB clicked.", Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(getActivity().getApplicationContext(), EditRecipe.class);
+                intent.putExtra("mode", "add");
                 startActivity(intent);
             }
         });

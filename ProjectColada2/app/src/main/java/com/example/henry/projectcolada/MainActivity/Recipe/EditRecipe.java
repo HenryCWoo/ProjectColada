@@ -15,6 +15,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.henry.projectcolada.R;
@@ -52,6 +53,8 @@ public class EditRecipe extends AppCompatActivity {
     private FirebaseAuth auth;
     private View overlay;
 
+    private String mode, oldDrinkName;
+
     // handle button activities
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -60,14 +63,18 @@ public class EditRecipe extends AppCompatActivity {
         if (id == R.id.cancel_icon) {
             finish();
         } else if (id == R.id.delete_icon) {
-//            if (CheckNetworkStatus.isNetworkAvailable(getApplicationContext())) {
+            if(mode.equals("add")) {
+                finish();
+            } else {
+                //            if (CheckNetworkStatus.isNetworkAvailable(getApplicationContext())) {
 //                deleteDrink();
 //            } else {
 //                Toast.makeText(EditRecipe.this,
 //                        "Unable to connect to internet",
 //                        Toast.LENGTH_LONG).show();
 //            }
-            Toast.makeText(EditRecipe.this, "DELETE", Toast.LENGTH_SHORT).show();
+            }
+//            Toast.makeText(EditRecipe.this, "DELETE", Toast.LENGTH_SHORT).show();
         } else if (id == R.id.add_icon) {
             if (CheckNetworkStatus.isNetworkAvailable(getApplicationContext())) {
                 addDrink();
@@ -173,16 +180,23 @@ public class EditRecipe extends AppCompatActivity {
             httpParams.put(ABOUT, aboutText);
             httpParams.put(AUTHOR, authorName);
             httpParams.put(INSTRUCTIONS, instrText);
+            httpParams.put("oldDrinkName", oldDrinkName);
             //Populating request parameters
             for (int i=0; i<=paramValues.length-1; i++) {
                 if (!paramValues[i].equals("N/A")) {
                     httpParams.put(paramKeys[i], paramValues[i]);
                 } else {
-                    httpParams.put(paramKeys[i], "null");
+                    httpParams.put(paramKeys[i], null);
                 }
             }
-            JSONObject jsonObject = httpJsonParser.makeHttpRequest(
-                    BASE_URL + "add_drink.php", "POST", httpParams);
+            JSONObject jsonObject;
+            if(mode.equals("add")) {
+                jsonObject = httpJsonParser.makeHttpRequest(
+                        BASE_URL + "add_drink.php", "POST", httpParams);
+            } else {
+                jsonObject = httpJsonParser.makeHttpRequest(
+                        BASE_URL + "update_drink.php", "POST", httpParams);
+            }
             try {
                 Log.v("RESULT OF ADDING DRINK:", jsonObject.toString());
                 success = jsonObject.getInt(KEY_SUCCESS);
@@ -220,6 +234,9 @@ public class EditRecipe extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_recipe);
+
+        Intent prevIntent = getIntent();
+        mode = prevIntent.getStringExtra("mode");
 
         editPB = (ProgressBar) findViewById(R.id.edit_pb);
         overlay = (View) findViewById(R.id.overlay);
@@ -279,6 +296,38 @@ public class EditRecipe extends AppCompatActivity {
 
         auth = FirebaseAuth.getInstance();
         authorID = auth.getCurrentUser().getUid();
+        switch(mode){
+            case "add":
+                break;
+            case "edit":
+                oldDrinkName = prevIntent.getStringExtra("drinkName");
+                title.setText(prevIntent.getStringExtra("drinkName"), TextView.BufferType.EDITABLE);
+                about.setText(prevIntent.getStringExtra("about"), TextView.BufferType.EDITABLE);
+                instructions.setText(prevIntent.getStringExtra("instructions"), TextView.BufferType.EDITABLE);
+                String[] attributes = prevIntent.getStringArrayExtra("Attributes");
+                spiritSpin.setSelection(getIndex(spiritSpin, prevIntent.getStringExtra("spirit")));
+                glassSpin.setSelection(getIndex(glassSpin, attributes[9]));
+                typeSpin.setSelection(getIndex(typeSpin, attributes[10]));
+                strengthSpin.setSelection(getIndex(strengthSpin, attributes[6]));
+                difficultySpin.setSelection(getIndex(difficultySpin, attributes[7]));
+                themeSpin.setSelection(getIndex(themeSpin, attributes[8]));
+                serveSpin.setSelection(getIndex(serveSpin, attributes[11]));
+                prepSpin.setSelection(getIndex(prepSpin, attributes[5]));
+                flavor_spin.setSelection(getIndex(flavor_spin, prevIntent.getStringExtra("flavor")));
+        }
+    }
+
+    private int getIndex(Spinner spinner, String myString){
+        int index = 0;
+        if(myString.equals("null")){ //display "N/A"
+            return index;
+        }
+        for (int i=0;i<spinner.getCount();i++){
+            if (spinner.getItemAtPosition(i).equals(myString)){
+                index = i;
+            }
+        }
+        return index;
     }
 
     private String getSpinnerData(Spinner mSpinner) {
