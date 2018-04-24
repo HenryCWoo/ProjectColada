@@ -6,6 +6,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
 import com.example.henry.projectcolada.MainActivity.Recipe.RecipeFragment;
+import com.example.henry.projectcolada.MainActivity.Suggestion.SuggestionFragment;
 
 /**
  * Created by h3nry on 4/20/2018.
@@ -31,6 +32,8 @@ public class MainActivityAdapter extends FragmentPagerAdapter {
 //        }
         if (position == 0) {
             return new RecipeFragment();
+        } else if (position == 1) {
+            return new SuggestionFragment();
         } else {
             return new AIFragment();
         }
@@ -39,8 +42,8 @@ public class MainActivityAdapter extends FragmentPagerAdapter {
     // determines number of tabs
     @Override
     public int getCount() {
-//        return 3;
-        return 2;
+        return 3;
+//        return 2;
     }
 
     @Override
@@ -55,6 +58,8 @@ public class MainActivityAdapter extends FragmentPagerAdapter {
             case 0:
                 return "Recipes";
             case 1:
+                return "Suggestions";
+            case 2:
                 return "AI";
             default: return null;
         }
