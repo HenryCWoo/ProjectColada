@@ -42,7 +42,8 @@
                 android:id="@+id/title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="24sp" />
+                android:textSize="18sp"
+                android:hint="Name your drink"/>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -60,7 +61,8 @@
                 android:gravity="top|left"
                 android:inputType="textCapSentences|textMultiLine"
                 android:minHeight="64dp"
-                android:textSize="14sp" />
+                android:textSize="14sp"
+                android:hint="Give your drink a story"/>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -106,7 +108,8 @@
                 android:gravity="top|left"
                 android:inputType="textCapSentences|textMultiLine"
                 android:minHeight="64dp"
-                android:textSize="14sp" />
+                android:textSize="14sp"
+                android:hint="Show'em your ways"/>
 
             <LinearLayout
                 android:layout_width="match_parent"
