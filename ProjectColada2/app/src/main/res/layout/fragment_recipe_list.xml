@@ -18,15 +18,18 @@
             android:orientation="horizontal">
 
             <EditText
+                android:id="@+id/search_drinks"
+                android:hint="Search"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1" />
 
             <ImageView
+                android:id="@+id/filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:src="@drawable/settings_cog" />
+                android:src="@drawable/filter_icon" />
         </LinearLayout>
 
         <ProgressBar
@@ -41,7 +44,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:divider="@android:color/transparent"
-            android:dividerHeight="5dp"></ListView>
+            android:dividerHeight="5dp"/>
 
     </LinearLayout>
     <android.support.design.widget.FloatingActionButton
@@ -52,6 +55,5 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentBottom="true"
         android:layout_marginRight="@dimen/activity_horizontal_margin"
-        android:layout_marginBottom="@dimen/activity_horizontal_margin"
-        />
+        android:layout_marginBottom="@dimen/activity_horizontal_margin" />
 </RelativeLayout>

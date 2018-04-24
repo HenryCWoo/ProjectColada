@@ -9,11 +9,14 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.RatingBar;
@@ -45,6 +48,7 @@ public class RecipeFragment extends Fragment {
     private ListView drinkListView;
     private ProgressBar pDialog;
     private FloatingActionButton addRecipeFAB;
+    private EditText searchDrinks;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -71,6 +75,23 @@ public class RecipeFragment extends Fragment {
                 startActivity(intent);
             }
         });
+
+        searchDrinks = v.findViewById(R.id.search_drinks);
+        searchDrinks.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
+
         new RecipeFragment.FetchDrinkAsyncTask().execute();
     }
 
