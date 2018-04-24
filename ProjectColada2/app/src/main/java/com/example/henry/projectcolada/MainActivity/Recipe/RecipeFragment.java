@@ -65,9 +65,9 @@ public class RecipeFragment extends Fragment {
         addRecipeFAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(getActivity(), "FAB clicked.", Toast.LENGTH_SHORT).show();
-//                Intent intent = new Intent(getActivity().getApplicationContext(), null);
-//                startActivity(intent);
+//                Toast.makeText(getActivity(), "FAB clicked.", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(getActivity().getApplicationContext(), EditRecipe.class);
+                startActivity(intent);
             }
         });
         new RecipeFragment.FetchDrinkAsyncTask().execute();
@@ -216,6 +216,7 @@ public class RecipeFragment extends Fragment {
     public void onResume() {
         super.onResume();
         pDialog.setVisibility(View.GONE);
+        new RecipeFragment.FetchDrinkAsyncTask().execute();
     }
 }
 
